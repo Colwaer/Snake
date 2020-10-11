@@ -2,6 +2,7 @@
 #include<cstdio>
 #include<graphics.h>
 #include<conio.h>
+#include<cstdlib>
 #include<windows.h>
 
 const int sizeFont = 18;
@@ -26,11 +27,12 @@ public:
         struct node* previous;
         IMAGE UNIT;
     };
-    struct node* head=new node;
-    struct node* tail=new node;  
-public:
+    struct node* head=NULL;
+    struct node* tail=NULL;  
     Snake()
     {
+        head = NULL;
+        tail = NULL;
         loadimage(&BLANK, _T("BLANK.png"));
         loadimage(&BODY, _T("SnakeUnit.png"));
         loadimage(&HEAD, _T("SnakeHead.png"));
@@ -43,10 +45,17 @@ public:
             tail = tail->next;
             for(;tail!=NULL;tail=tail->next)
             {
-                delete tail->previous;
+                free(tail->previous);
+                tail->previous = NULL;
             }
         }
+ //       struct node* head = NULL;
+ //       struct node* tail = NULL;
+ //       head = (struct node*)malloc(sizeof(struct node));
+ //       tail = (struct node*)malloc(sizeof(struct node));
+        struct node* head = new node;
         head->next = NULL;
+        struct node* tail = new node;
         head->previous = tail;
         tail->next = head;
         tail->previous = NULL;
@@ -57,7 +66,7 @@ public:
     }
     void NewNode()
     {
-        struct node* p1 = new Snake::node;
+        struct node* p1 = (struct node*)malloc(sizeof(struct node));
         p1->next = head; p1->previous = head->previous->previous; head->previous = p1;
         p1->x = tail->x; p1->y = tail->y; p1->UNIT = BODY;
     }
@@ -65,14 +74,16 @@ public:
     {
         struct node* p1=head;
         while (p1->previous != NULL) { p1 = p1->previous; }
-        delete p1;
+        free(p1);
     }
     void PrintSnake()
     {
+        struct node* p2 = tail;
         loadimage(&BLANK, _T("BLANK.png"));
         loadimage(&BODY, _T("SnakeUnit.png"));
         loadimage(&HEAD, _T("SnakeHead.png"));
-        putimage(tail->x, tail->y, 130, 130, &BLANK, 0, 0);
+
+        putimage(p2->x, p2->y, 130, 130, &BLANK, 0, 0);
         struct node* p1 = head;
         for(;p1->previous!=NULL;p1=p1->previous)
         {
@@ -91,8 +102,10 @@ void MainMenu();
 void ModeSelect();
 void RoundSelect();
 void game();
+Snake::node tail;
 int main()
 {
+
     initgraph(WIDTH, HEIGHT);
 
     Init();
@@ -237,8 +250,8 @@ void RoundSelect()
 }
 void game()
 {   
-    Snake *Colwaer=new Snake;
+    Snake Colwaer;
     DrawMap();
-    Colwaer->InitNode();
-    while (1) { Colwaer->PrintSnake(); Colwaer->MoveTest(); }
+    Colwaer.InitNode();
+    while (1) { Colwaer.PrintSnake(); Colwaer.MoveTest(); }
 }
