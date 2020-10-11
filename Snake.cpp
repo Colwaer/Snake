@@ -2,6 +2,7 @@
 #include<cstdio>
 #include<graphics.h>
 #include<conio.h>
+#include<windows.h>
 
 const int sizeFont = 18;
 const int WIDTH = 1280;			// 屏幕宽1024
@@ -12,29 +13,103 @@ const int MAPH = (HEIGHT * 4);	// 地图高
 int Round = 1;//关卡
 
 IMAGE		Map(MAPW, MAPH);
-
-void DrawMap(int x1, int y1, int x2, int y2);
+class Snake
+{
+public:
+    IMAGE BODY, HEAD,BLANK;
+    int speed=200;
+    struct node
+    {
+        int x;
+        int y;
+        struct node* next;
+        struct node* previous;
+        IMAGE UNIT;
+    };
+    struct node* head=new node;
+    struct node* tail=new node;  
+public:
+    Snake()
+    {
+        loadimage(&BLANK, _T("BLANK.png"));
+        loadimage(&BODY, _T("SnakeUnit.png"));
+        loadimage(&HEAD, _T("SnakeHead.png"));
+    }
+    void Setspeed(int temp) { speed = temp; }
+    void InitNode()
+    {
+        if(head!=NULL)
+        {
+            tail = tail->next;
+            for(;tail!=NULL;tail=tail->next)
+            {
+                delete tail->previous;
+            }
+        }
+        head->next = NULL;
+        head->previous = tail;
+        tail->next = head;
+        tail->previous = NULL;
+        head->UNIT = HEAD;
+        tail->UNIT = BODY;
+        head->x = WIDTH / 3; head->y = HEIGHT / 2;
+        tail->x = head->x + 50; tail->y = head->y + 50;
+    }
+    void NewNode()
+    {
+        struct node* p1 = new Snake::node;
+        p1->next = head; p1->previous = head->previous->previous; head->previous = p1;
+        p1->x = tail->x; p1->y = tail->y; p1->UNIT = BODY;
+    }
+    void DeleteNode()
+    {
+        struct node* p1=head;
+        while (p1->previous != NULL) { p1 = p1->previous; }
+        delete p1;
+    }
+    void PrintSnake()
+    {
+        loadimage(&BLANK, _T("BLANK.png"));
+        loadimage(&BODY, _T("SnakeUnit.png"));
+        loadimage(&HEAD, _T("SnakeHead.png"));
+        putimage(tail->x, tail->y, 130, 130, &BLANK, 0, 0);
+        struct node* p1 = head;
+        for(;p1->previous!=NULL;p1=p1->previous)
+        {
+            putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
+        }
+    }
+    void MoveTest()
+    {
+        Sleep(speed);
+        head->x += 50;
+    }
+};
+void DrawMap();
 void Init();
 void MainMenu();
 void ModeSelect();
 void RoundSelect();
+void game();
 int main()
 {
     initgraph(WIDTH, HEIGHT);
+
     Init();
     _getch();
     int pd = 0;
     MainMenu();
-
+    game();
+    _getch();
     closegraph();
     return 0;
 }
-void DrawMap(int x1,int y1,int x2,int y2)
+void DrawMap()
 {
     COLORREF backgroundColor=(50, 2, 50);
     loadimage(&Map, _T("game.png"));
-    setbkcolor(LIGHTBLUE);
     putimage(0, 0, WIDTH, HEIGHT, &Map, 0, 0);  
+
 }
 void Init()
 {
@@ -159,4 +234,11 @@ void RoundSelect()
         }
     }
 
+}
+void game()
+{   
+    Snake *Colwaer=new Snake;
+    DrawMap();
+    Colwaer->InitNode();
+    while (1) { Colwaer->PrintSnake(); Colwaer->MoveTest(); }
 }
