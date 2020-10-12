@@ -18,7 +18,7 @@ class Snake
 {
 public:
     IMAGE BODY, HEAD,BLANK;
-    int speed=200;
+    int speed=500;
     struct node
     {
         int x;
@@ -27,12 +27,10 @@ public:
         struct node* previous;
         IMAGE UNIT;
     };
-    struct node* head=NULL;
-    struct node* tail=NULL;  
+    struct node* head;
+    struct node* tail;  
     Snake()
     {
-        head = NULL;
-        tail = NULL;
         loadimage(&BLANK, _T("BLANK.png"));
         loadimage(&BODY, _T("SnakeUnit.png"));
         loadimage(&HEAD, _T("SnakeHead.png"));
@@ -54,15 +52,41 @@ public:
  //       head = (struct node*)malloc(sizeof(struct node));
  //       tail = (struct node*)malloc(sizeof(struct node));
         struct node* head = new node;
-        head->next = NULL;
         struct node* tail = new node;
+        head->next = NULL;
         head->previous = tail;
         tail->next = head;
         tail->previous = NULL;
         head->UNIT = HEAD;
         tail->UNIT = BODY;
         head->x = WIDTH / 3; head->y = HEIGHT / 2;
-        tail->x = head->x + 50; tail->y = head->y + 50;
+        tail->x = head->x; tail->y = head->y+55;
+        struct node* temp = new node;
+        temp->x = 300; temp->y = 300;
+        while (1) {
+            if(head->y%100==0)
+            {
+                struct node* p4 = new node;
+                p4->next = head; p4->previous = head->previous->previous; head->previous = p4;
+                p4->x = temp->x; p4->y = temp->y; p4->UNIT = BODY;
+            }
+            struct node* p2 = head;
+            while (p2->previous != NULL)p2 = p2->previous;
+            struct node* p1 = head;
+            while(p1->previous!=NULL)
+            {
+                putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
+                p1 = p1->previous;
+            }putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
+            Sleep(10);
+            putimage(temp->x, temp->y, 130, 130, &BLANK, 0, 0);
+            temp->x = p1->x; temp->y = p1->y;
+            struct node* p3 = head;
+            for(;p3->previous!=NULL;p3=p3->previous)
+            {
+                p3->y -= 1;
+            }p3->y -= 1;
+        }
     }
     void NewNode()
     {
@@ -74,22 +98,23 @@ public:
     {
         struct node* p1=head;
         while (p1->previous != NULL) { p1 = p1->previous; }
-        free(p1);
+        delete p1;
     }
-    void PrintSnake()
+ /*   void PrintSnake()
     {
-        struct node* p2 = tail;
-        loadimage(&BLANK, _T("BLANK.png"));
-        loadimage(&BODY, _T("SnakeUnit.png"));
-        loadimage(&HEAD, _T("SnakeHead.png"));
+        struct node *p2 = tail;
+//        loadimage(&BLANK, _T("BLANK.png"));
+//        loadimage(&BODY, _T("SnakeUnit.png"));
+//        loadimage(&HEAD, _T("SnakeHead.png"));
 
         putimage(p2->x, p2->y, 130, 130, &BLANK, 0, 0);
-        struct node* p1 = head;
+        struct node *p1 = head;
         for(;p1->previous!=NULL;p1=p1->previous)
         {
             putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
         }
     }
+*/
     void MoveTest()
     {
         Sleep(speed);
@@ -253,5 +278,4 @@ void game()
     Snake Colwaer;
     DrawMap();
     Colwaer.InitNode();
-    while (1) { Colwaer.PrintSnake(); Colwaer.MoveTest(); }
 }
