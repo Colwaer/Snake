@@ -4,16 +4,18 @@
 #include<conio.h>
 #include<cstdlib>
 #include<windows.h>
-
+#include<cmath>
+#define PI 3.14159265
 const int sizeFont = 18;
 const int WIDTH = 1280;			// 屏幕宽1024
 const int HEIGHT = 720;			// 屏幕高576
 const int MAPW = (WIDTH * 4);	// 地图宽
 const int MAPH = (HEIGHT * 4);	// 地图高
-
+double direction= PI ;
 int Round = 1;//关卡
 
 IMAGE		Map(MAPW, MAPH);
+/*
 class Snake
 {
 public:
@@ -53,6 +55,11 @@ public:
         setfillcolor(BLACK);
         solidcircle(x-7, y-4, 3); solidcircle(x+7, y-4, 3);
     }
+    void DrawBlank(int x,int y)
+    {
+        setfillcolor(WHITE); 
+        solidcircle(x, y, 20);
+    }
     void Setspeed(int temp) { speed = temp; }
     void InitNode()
     {
@@ -82,7 +89,7 @@ public:
         struct node* temp = new node;
         temp->x = 300; temp->y = 300;
         while (1) {
-            if(head->y%100==0)
+            if(1)
             {
                 struct node* p4 = new node;
                 head->next = p4; p4->previous = head; p4->next = NULL;
@@ -104,14 +111,16 @@ public:
                 p1 = p1->previous;
             }if (p1->isHead)DrawHead(p1->x, p1->y);
             else DrawBody(p1->x, p1->y);
-            Sleep(20);
-            putimage(temp->x-65, temp->y, 130, 130, &BLANK, 0, 0);
+            DrawHead(head->x, head->y);
+            Sleep(1000);
+            DrawBlank(temp->x, temp->y);
             temp->x = p1->x; temp->y = p1->y;
-            struct node* p3 = head;
+            struct node* p3 = head->previous;
             for(;p3->previous!=NULL;p3=p3->previous)
             {
-                p3->y -= 1;
-            }p3->y -= 1;
+                p3->x = p3->next->x; p3->y = p3->next->y;
+            }p3->x = p3->next->x; p3->y = p3->next->y;
+            head->x += 1; head->y += 0;
         }
     }
     void NewNode()
@@ -126,7 +135,8 @@ public:
         while (p1->previous != NULL) { p1 = p1->previous; }
         delete p1;
     }
- /*   void PrintSnake()
+    
+    void PrintSnake()
     {
         struct node *p2 = tail;
 //        loadimage(&BLANK, _T("BLANK.png"));
@@ -140,20 +150,21 @@ public:
             putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
         }
     }
-*/
+
     void MoveTest()
     {
         Sleep(speed);
         head->x += 50;
     }
 };
+*/
 void DrawMap();
 void Init();
 void MainMenu();
 void ModeSelect();
 void RoundSelect();
 void game();
-Snake::node tail;
+
 int main()
 {
 
@@ -301,7 +312,7 @@ void RoundSelect()
 }
 void game()
 {   
-    Snake Colwaer;
+    
     DrawMap();
-    Colwaer.InitNode();
+    _getch();
 }
