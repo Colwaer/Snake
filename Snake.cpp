@@ -49,9 +49,9 @@ public:
         setfillcolor(BodyBlue);
         solidcircle(x, y, 20);
         setfillcolor(WHITE);
-        solidcircle(x, y, 10);
+        solidcircle(x-7, y-4, 6); solidcircle(x +7, y - 4, 6);
         setfillcolor(BLACK);
-        solidcircle(x, y, 5);
+        solidcircle(x-7, y-4, 3); solidcircle(x+7, y-4, 3);
     }
     void Setspeed(int temp) { speed = temp; }
     void InitNode()
@@ -99,10 +99,10 @@ public:
             struct node* p1 = head;
             while(p1->previous!=NULL)
             {
-                if (p1->isHead)putimage(p1->x-65, p1->y, 130, 130, &(p1->UNIT), 0, 0);
+                if (p1->isHead)DrawHead(p1->x, p1->y);
                 else DrawBody(p1->x, p1->y);
                 p1 = p1->previous;
-            }if (p1->isHead)putimage(p1->x-65, p1->y, 130, 130, &(p1->UNIT), 0, 0);
+            }if (p1->isHead)DrawHead(p1->x, p1->y);
             else DrawBody(p1->x, p1->y);
             Sleep(20);
             putimage(temp->x-65, temp->y, 130, 130, &BLANK, 0, 0);
