@@ -67,8 +67,14 @@ public:
             if(head->y%100==0)
             {
                 struct node* p4 = new node;
-                p4->next = head; p4->previous = head->previous->previous; head->previous = p4;
-                p4->x = temp->x; p4->y = temp->y; p4->UNIT = BODY;
+                head->next = p4; p4->previous = head; p4->next = NULL;
+                p4->x = head->x; p4->y = head->y - 55; p4->UNIT = HEAD;
+                head->UNIT = BODY; head = p4;
+            }
+            if(head->y%200==0)
+            {
+                head = head->previous; head->UNIT = HEAD;
+                delete head->next; head->next = NULL;
             }
             struct node* p2 = head;
             while (p2->previous != NULL)p2 = p2->previous;
@@ -78,7 +84,7 @@ public:
                 putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
                 p1 = p1->previous;
             }putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
-            Sleep(10);
+            Sleep(20);
             putimage(temp->x, temp->y, 130, 130, &BLANK, 0, 0);
             temp->x = p1->x; temp->y = p1->y;
             struct node* p3 = head;
