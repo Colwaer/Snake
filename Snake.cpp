@@ -26,7 +26,9 @@ public:
         struct node* next;
         struct node* previous;
         IMAGE UNIT;
+        bool isHead;
     };
+    COLORREF BodyBlue;
     struct node* head;
     struct node* tail;  
     Snake()
@@ -34,6 +36,22 @@ public:
         loadimage(&BLANK, _T("BLANK.png"));
         loadimage(&BODY, _T("SnakeUnit.png"));
         loadimage(&HEAD, _T("SnakeHead.png"));
+        BodyBlue = RGB(0, 191, 255);
+        setfillcolor(BodyBlue);
+    }
+    void DrawBody(int x,int y)
+    {
+        setfillcolor(BodyBlue);
+        solidcircle(x, y, 20);
+    }
+    void DrawHead(int x,int y)
+    {
+        setfillcolor(BodyBlue);
+        solidcircle(x, y, 20);
+        setfillcolor(WHITE);
+        solidcircle(x, y, 10);
+        setfillcolor(BLACK);
+        solidcircle(x, y, 5);
     }
     void Setspeed(int temp) { speed = temp; }
     void InitNode()
@@ -57,8 +75,8 @@ public:
         head->previous = tail;
         tail->next = head;
         tail->previous = NULL;
-        head->UNIT = HEAD;
-        tail->UNIT = BODY;
+        head->UNIT = HEAD; head->isHead = 1;
+        tail->UNIT = BODY; tail->isHead = 0;
         head->x = WIDTH / 3; head->y = HEIGHT / 2;
         tail->x = head->x; tail->y = head->y+55;
         struct node* temp = new node;
@@ -68,12 +86,12 @@ public:
             {
                 struct node* p4 = new node;
                 head->next = p4; p4->previous = head; p4->next = NULL;
-                p4->x = head->x; p4->y = head->y - 55; p4->UNIT = HEAD;
-                head->UNIT = BODY; head = p4;
+                p4->x = head->x; p4->y = head->y - 55; p4->UNIT = HEAD; p4->isHead = 1;
+                head->UNIT = BODY; head->isHead = 0; head = p4;
             }
             if(head->y%200==0)
             {
-                head = head->previous; head->UNIT = HEAD;
+                head = head->previous; head->UNIT = HEAD; head->isHead = 1;
                 delete head->next; head->next = NULL;
             }
             struct node* p2 = head;
@@ -81,11 +99,13 @@ public:
             struct node* p1 = head;
             while(p1->previous!=NULL)
             {
-                putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
+                if (p1->isHead)putimage(p1->x-65, p1->y, 130, 130, &(p1->UNIT), 0, 0);
+                else DrawBody(p1->x, p1->y);
                 p1 = p1->previous;
-            }putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
+            }if (p1->isHead)putimage(p1->x-65, p1->y, 130, 130, &(p1->UNIT), 0, 0);
+            else DrawBody(p1->x, p1->y);
             Sleep(20);
-            putimage(temp->x, temp->y, 130, 130, &BLANK, 0, 0);
+            putimage(temp->x-65, temp->y, 130, 130, &BLANK, 0, 0);
             temp->x = p1->x; temp->y = p1->y;
             struct node* p3 = head;
             for(;p3->previous!=NULL;p3=p3->previous)
