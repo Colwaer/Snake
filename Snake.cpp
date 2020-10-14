@@ -13,13 +13,18 @@ const int WIDTH = 1280;			// 屏幕宽1024
 const int HEIGHT = 720;			// 屏幕高576
 const int MAPW = (WIDTH * 4);	// 地图宽
 const int MAPH = (HEIGHT * 4);	// 地图高
-const int RADIUS = 15;
+int RADIUS = 15;
 double directionx = 0;
 double directiony = 100;
 double Judgex = 0;
 double Judgey = 100;
 char direction='w';
 char Key;
+int foodX;
+int foodY;
+int grassX;
+int grassY;
+int score = 0;
 int Round = 1;//关卡
 typedef struct SNAKE
 {
@@ -46,7 +51,13 @@ void DrawSnake(link head, link end);
 void MoveSnake(link head, link end);
 void ClearSnake(link head, link end);
 void DirectionChange(char InputKey);
-void EndGame(link head, link end);
+int EndGame(link head, link end);
+int FoodReach(link head, link end);
+void CreateFood(link head, link end);
+void SnakeAdd(link head, link end);
+void CreateGrass(link head, link end);
+int GrassReach(link head, link end);
+void SnakeDelete(link head, link end);
 
 int main()
 {
@@ -202,9 +213,9 @@ void DrawHead(int x, int y)
     setfillcolor(BodyBlue);
     solidcircle(x, y, RADIUS);
     setfillcolor(WHITE);
-    solidcircle(x - 7, y - 4, 6); solidcircle(x + 7, y - 4, 6);
+    solidcircle(x - 7, y -1, 6); solidcircle(x + 7, y -1, 6);
     setfillcolor(BLACK);
-    solidcircle(x - 7, y - 4, 3); solidcircle(x + 7, y - 4, 3);
+    solidcircle(x - 7, y -1, 3); solidcircle(x + 7, y -1, 3);
 }
 void DrawBlank(int x, int y)
 {
@@ -217,16 +228,28 @@ void game()
     InitNode();
     InitSnake(head,end);
     DrawSnake(head, end);
+    CreateFood(head, end);
+    CreateGrass(head, end);
     while(1)
     {
-        Sleep(10);
+        Sleep(100);
         ClearSnake(head, end);
         MoveSnake(head, end);
         if (_kbhit())
             Key = _getch();
         DirectionChange(Key);
-        EndGame(head, end);
-
+        if (EndGame(head, end)) break;
+        if(FoodReach(head,end))
+        {
+            SnakeAdd(head, end);
+            score++;
+        }
+        if(GrassReach(head,end))
+        {
+            SnakeDelete(head, end);
+            score--;
+            if (score < 0)break;
+        }
         DrawSnake(head, end);       
     }
     _getch();
@@ -261,14 +284,17 @@ void DrawSnake(link head, link end)
 void MoveSnake(link head,link end)
 {
     link p = head->next;
-    while (p != end)
+    link q=end;
+    while(q->last!=head)
     {
-        if(direction=='w')p->y -= 1;
-        else if (direction == 's')p->y += 1;
-        else if (direction == 'a')p->x -= 1;
-        else if (direction == 'd')p->x += 1;
-        p = p->next;
+        q->x = q->last->x;
+        q->y = q->last->y;
+        q = q->last;
     }
+        if(direction=='w')p->y -= RADIUS;
+        else if (direction == 's')p->y += RADIUS;
+        else if (direction == 'a')p->x -= RADIUS;
+        else if (direction == 'd')p->x += RADIUS;
 }
 void ClearSnake(link head, link end)
 {
@@ -300,8 +326,88 @@ void DirectionChange(char InputKey)
     else if (InputKey == 'a') { if (direction != 'd')direction = 'a'; }
     else if (InputKey == 'd') { if (direction != 'a')direction = 'd'; }
 }
-void EndGame(link head, link end)
+int EndGame(link head, link end)
 {
     link p = head->next;
-    if (p->x < RADIUS || p->y < RADIUS || p->x>930 || p->y>720 - RADIUS) { _getch(); }
+    double distance;
+    if (p->x < RADIUS || p->y < RADIUS || p->x>925 || p->y>720 - RADIUS) { return 1; }
+    p = p->next;
+    while(p!=end)
+    {        
+        distance = fabs(head->next->x - p->x) * fabs(head->next->x - p->x) + fabs(head->next->y - p->y) * fabs(head->next->y - p->y);
+        if (distance < (double)RADIUS*2) { return 1; }
+        p = p->next;
+    }
+    return 0;
+}
+void CreateFood(link head,link end)
+{
+    link p = head;
+    do
+    {
+        foodY = rand() % 500 + 50;
+        foodX = rand() % 500 + 50;
+    } while (FoodReach(head, end));
+    setfillcolor(LIGHTRED);
+    solidcircle(foodX, foodY, RADIUS/2);
+}
+int FoodReach(link head, link end)
+{
+    link p = head->next;
+    double distance;
+    while (p != end)
+    {
+        distance = fabs(p->x - foodX) * fabs(p->x - foodX) + fabs(p->y - foodY) * fabs(p->y - foodY);
+        if (distance < (double)RADIUS * (double)RADIUS+165) { return 1; }
+        p = p->next;
+    }
+    return 0;
+}
+void SnakeAdd(link head,link end)
+{
+    link body, p;
+    body = (link)malloc(sizeof(snake));
+    body->isHead = 0;
+    p = end->last;
+    p->next = body; body->next = end;
+    end->last = body; body->last = p;
+    body->x = foodX; body->y = foodY;
+    setfillcolor(WHITE);
+    solidcircle(foodX, foodY, RADIUS / 2);
+    CreateFood(head, end);
+}
+void CreateGrass(link head,link end)
+{
+    srand((unsigned)time(NULL));
+    link p = head;
+    do
+    {
+        grassX = rand() % 820 + 50;
+        grassY = rand() % 640 + 50;
+    } while (GrassReach(head, end));
+    setfillcolor(GREEN);
+    solidcircle(grassX, grassY, RADIUS / 2);
+}
+void SnakeDelete(link head,link end)
+{
+    link p = end->last->last, q = end->last;
+    p->next = end;
+    end->last = p;
+    DrawBlank(q->x, q->y);
+    setfillcolor(WHITE);
+    solidcircle(grassX, grassY, RADIUS / 2);
+    free(q);
+    CreateGrass(head, end);
+}
+int GrassReach(link head, link end)
+{
+    link p = head->next;
+    double distance;
+    while (p != end)
+    {
+        distance = fabs(p->x - grassX) * fabs(p->x - grassX) + fabs(p->y - grassY) * fabs(p->y - grassY);
+        if (distance < (double)RADIUS * (double)RADIUS + 165) { return 1; }
+        p = p->next;
+    }
+    return 0;
 }
