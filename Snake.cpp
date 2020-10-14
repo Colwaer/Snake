@@ -2,174 +2,56 @@
 #include<cstdio>
 #include<graphics.h>
 #include<conio.h>
+#include<ctime>
 #include<cstdlib>
 #include<windows.h>
 #include<cmath>
+#include<list>
 #define PI 3.14159265
 const int sizeFont = 18;
 const int WIDTH = 1280;			// 屏幕宽1024
 const int HEIGHT = 720;			// 屏幕高576
 const int MAPW = (WIDTH * 4);	// 地图宽
 const int MAPH = (HEIGHT * 4);	// 地图高
-double direction= PI ;
+const int RADIUS = 15;
+double directionx = 0;
+double directiony = 100;
+double Judgex = 0;
+double Judgey = 100;
+char direction='w';
+char Key;
 int Round = 1;//关卡
-
-IMAGE		Map(MAPW, MAPH);
-/*
-class Snake
+typedef struct SNAKE
 {
-public:
-    IMAGE BODY, HEAD,BLANK;
-    int speed=500;
-    struct node
-    {
-        int x;
-        int y;
-        struct node* next;
-        struct node* previous;
-        IMAGE UNIT;
-        bool isHead;
-    };
-    COLORREF BodyBlue;
-    struct node* head;
-    struct node* tail;  
-    Snake()
-    {
-        loadimage(&BLANK, _T("BLANK.png"));
-        loadimage(&BODY, _T("SnakeUnit.png"));
-        loadimage(&HEAD, _T("SnakeHead.png"));
-        BodyBlue = RGB(0, 191, 255);
-        setfillcolor(BodyBlue);
-    }
-    void DrawBody(int x,int y)
-    {
-        setfillcolor(BodyBlue);
-        solidcircle(x, y, 20);
-    }
-    void DrawHead(int x,int y)
-    {
-        setfillcolor(BodyBlue);
-        solidcircle(x, y, 20);
-        setfillcolor(WHITE);
-        solidcircle(x-7, y-4, 6); solidcircle(x +7, y - 4, 6);
-        setfillcolor(BLACK);
-        solidcircle(x-7, y-4, 3); solidcircle(x+7, y-4, 3);
-    }
-    void DrawBlank(int x,int y)
-    {
-        setfillcolor(WHITE); 
-        solidcircle(x, y, 20);
-    }
-    void Setspeed(int temp) { speed = temp; }
-    void InitNode()
-    {
-        if(head!=NULL)
-        {
-            tail = tail->next;
-            for(;tail!=NULL;tail=tail->next)
-            {
-                free(tail->previous);
-                tail->previous = NULL;
-            }
-        }
- //       struct node* head = NULL;
- //       struct node* tail = NULL;
- //       head = (struct node*)malloc(sizeof(struct node));
- //       tail = (struct node*)malloc(sizeof(struct node));
-        struct node* head = new node;
-        struct node* tail = new node;
-        head->next = NULL;
-        head->previous = tail;
-        tail->next = head;
-        tail->previous = NULL;
-        head->UNIT = HEAD; head->isHead = 1;
-        tail->UNIT = BODY; tail->isHead = 0;
-        head->x = WIDTH / 3; head->y = HEIGHT / 2;
-        tail->x = head->x; tail->y = head->y+55;
-        struct node* temp = new node;
-        temp->x = 300; temp->y = 300;
-        while (1) {
-            if(1)
-            {
-                struct node* p4 = new node;
-                head->next = p4; p4->previous = head; p4->next = NULL;
-                p4->x = head->x; p4->y = head->y - 55; p4->UNIT = HEAD; p4->isHead = 1;
-                head->UNIT = BODY; head->isHead = 0; head = p4;
-            }
-            if(head->y%200==0)
-            {
-                head = head->previous; head->UNIT = HEAD; head->isHead = 1;
-                delete head->next; head->next = NULL;
-            }
-            struct node* p2 = head;
-            while (p2->previous != NULL)p2 = p2->previous;
-            struct node* p1 = head;
-            while(p1->previous!=NULL)
-            {
-                if (p1->isHead)DrawHead(p1->x, p1->y);
-                else DrawBody(p1->x, p1->y);
-                p1 = p1->previous;
-            }if (p1->isHead)DrawHead(p1->x, p1->y);
-            else DrawBody(p1->x, p1->y);
-            DrawHead(head->x, head->y);
-            Sleep(1000);
-            DrawBlank(temp->x, temp->y);
-            temp->x = p1->x; temp->y = p1->y;
-            struct node* p3 = head->previous;
-            for(;p3->previous!=NULL;p3=p3->previous)
-            {
-                p3->x = p3->next->x; p3->y = p3->next->y;
-            }p3->x = p3->next->x; p3->y = p3->next->y;
-            head->x += 1; head->y += 0;
-        }
-    }
-    void NewNode()
-    {
-        struct node* p1 = (struct node*)malloc(sizeof(struct node));
-        p1->next = head; p1->previous = head->previous->previous; head->previous = p1;
-        p1->x = tail->x; p1->y = tail->y; p1->UNIT = BODY;
-    }
-    void DeleteNode()
-    {
-        struct node* p1=head;
-        while (p1->previous != NULL) { p1 = p1->previous; }
-        delete p1;
-    }
-    
-    void PrintSnake()
-    {
-        struct node *p2 = tail;
-//        loadimage(&BLANK, _T("BLANK.png"));
-//        loadimage(&BODY, _T("SnakeUnit.png"));
-//        loadimage(&HEAD, _T("SnakeHead.png"));
-
-        putimage(p2->x, p2->y, 130, 130, &BLANK, 0, 0);
-        struct node *p1 = head;
-        for(;p1->previous!=NULL;p1=p1->previous)
-        {
-            putimage(p1->x, p1->y, 130, 130, &(p1->UNIT), 0, 0);
-        }
-    }
-
-    void MoveTest()
-    {
-        Sleep(speed);
-        head->x += 50;
-    }
-};
-*/
+    int x, y;
+    bool isHead;
+    struct SNAKE* next;
+    struct SNAKE* last;
+}snake,*link;
+link head, end;
+COLORREF BodyBlue = RGB(0, 191, 255);
+IMAGE		Map(MAPW, MAPH);
 void DrawMap();
 void Init();
 void MainMenu();
 void ModeSelect();
 void RoundSelect();
 void game();
+void DrawBody(int x, int y);
+void DrawHead(int x, int y);
+void DrawBlank(int x, int y);
+void InitNode();
+void InitSnake(link head, link end);
+void DrawSnake(link head, link end);
+void MoveSnake(link head, link end);
+void ClearSnake(link head, link end);
+void DirectionChange(char InputKey);
+void EndGame(link head, link end);
 
 int main()
 {
-
+    srand((unsigned)time(NULL));
     initgraph(WIDTH, HEIGHT);
-
     Init();
     _getch();
     int pd = 0;
@@ -310,9 +192,116 @@ void RoundSelect()
     }
 
 }
+void DrawBody(int x, int y)
+{
+    setfillcolor(BodyBlue);
+    solidcircle(x, y, RADIUS);
+}
+void DrawHead(int x, int y)
+{
+    setfillcolor(BodyBlue);
+    solidcircle(x, y, RADIUS);
+    setfillcolor(WHITE);
+    solidcircle(x - 7, y - 4, 6); solidcircle(x + 7, y - 4, 6);
+    setfillcolor(BLACK);
+    solidcircle(x - 7, y - 4, 3); solidcircle(x + 7, y - 4, 3);
+}
+void DrawBlank(int x, int y)
+{
+    setfillcolor(WHITE);
+    solidcircle(x, y, RADIUS);
+} 
 void game()
-{   
-    
-    DrawMap();
+{      
+    DrawMap(); 
+    InitNode();
+    InitSnake(head,end);
+    DrawSnake(head, end);
+    while(1)
+    {
+        Sleep(10);
+        ClearSnake(head, end);
+        MoveSnake(head, end);
+        if (_kbhit())
+            Key = _getch();
+        DirectionChange(Key);
+        EndGame(head, end);
+
+        DrawSnake(head, end);       
+    }
     _getch();
+}
+void InitNode()
+{
+    head = (link)malloc(sizeof(snake));
+    end = (link)malloc(sizeof(snake));
+    head->last = NULL;
+    head->next = end;
+    end->last = head;
+    end->next = NULL;
+}
+void InitSnake(link head,link end)
+{
+    link body1 = (link)malloc(sizeof(snake));
+    head->next = body1; body1->next = end;
+    end->last = body1; body1->last = head;
+    body1->x = 320; body1->y = 360; body1->isHead = 1;
+
+}
+void DrawSnake(link head, link end)
+{
+    link p = head->next;
+    while(p!=end)
+    {
+        if (p->isHead)DrawHead(p->x, p->y);
+        else DrawBody(p->x, p->y);
+        p = p->next;
+    }
+}
+void MoveSnake(link head,link end)
+{
+    link p = head->next;
+    while (p != end)
+    {
+        if(direction=='w')p->y -= 1;
+        else if (direction == 's')p->y += 1;
+        else if (direction == 'a')p->x -= 1;
+        else if (direction == 'd')p->x += 1;
+        p = p->next;
+    }
+}
+void ClearSnake(link head, link end)
+{
+    link p = head->next;
+    while (p != end)
+    {
+        DrawBlank(p->x, p->y);
+        p = p->next;
+    }
+}
+void DirectionChange(char InputKey)
+{
+/*    if (InputKey == 'w') { Judgex = 0; Judgey = 100; }
+    else if (InputKey == 's') { Judgex = 0; Judgey = -100; }
+    else if (InputKey == 'a') { Judgex = -100; Judgey = 0; }
+    else if (InputKey == 'd') { Judgex = 100; Judgey = 0; }    
+    double degree = (directionx * Judgex + directiony * Judgey) / (sqrt(directionx * directionx + directiony * directiony) * sqrt(Judgex * Judgex + Judgey * Judgey));
+    double sindegree = 1 - degree * degree;
+    if(degree>-1/2)
+    {
+        degree = fabs(degree);
+        if (InputKey == 'w') { if (directionx >= 0) { directionx += degree * 10; directiony -= sindegree * 10; } else { directionx -= degree * 10; directiony -= sindegree * 10; } }
+        if (InputKey == 's') { if (directionx >= 0) { directionx += degree * 10; directiony += sindegree * 10; } else { directionx -= degree * 10; directiony += sindegree * 10; } }
+        if (InputKey == 'a') { if (directiony >= 0) { directionx += degree * 10; directiony += sindegree * 10; } else { directionx -= degree * 10; directiony += sindegree * 10; } }
+    }
+    */
+    if (InputKey == 'w') { if (direction != 's')direction = 'w'; }
+    else if (InputKey == 's') { if (direction != 'w')direction = 's'; }
+    else if (InputKey == 'a') { if (direction != 'd')direction = 'a'; }
+    else if (InputKey == 'd') { if (direction != 'a')direction = 'd'; }
+}
+void EndGame(link head, link end)
+{
+    link p = head->next;
+    if (p->x < RADIUS || p->y < RADIUS || p->x>930 || p->y>720 - RADIUS) { _getch(); }
 }
