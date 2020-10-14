@@ -63,6 +63,7 @@ void SnakeDelete(link head, link end);
 void SnakeDeleteMine(link head, link end);
 void CreateMine(link head, link end);
 int MineReach(link head, link end);
+void GameSelect();
 
 int main()
 {
@@ -70,9 +71,11 @@ int main()
     initgraph(WIDTH, HEIGHT);
     Init();
     _getch();
+    origin:
     int pd = 0;
     MainMenu();
     game();
+    goto origin;
     _getch();
     closegraph();
     return 0;
@@ -117,36 +120,41 @@ void MainMenu()
     putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4+HEIGHT/4, 274, 42, &HelpGame1, 0, 0);
     putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4+HEIGHT/4+HEIGHT/8, 274, 42, &QuitGame1, 0, 0);
 //开始界面及准备
-    int pd = 1;
+    int pd1 = 1;
     while(1)
     {
         int i = _getch();
-        if (i == 119||i==87) { if (pd != 1)pd--; }
-        else if (i == 115||i==83) { if (pd != 4)pd++; }
+        if (i == 119||i==87) { if (pd1 != 1)pd1--; }
+        else if (i == 115||i==83) { if (pd1 != 4)pd1++; }
         else if (i == 13) { break; }
         else{}
-        if (pd == 1) {
+        if (pd1 == 1) {
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4, 274, 42, &StartGame2, 0, 0);
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 8, 274, 42, &SettingGame1, 0, 0);
         }
-        else if (pd == 2) { 
+        else if (pd1 == 2) { 
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 8, 274, 42, &SettingGame2, 0, 0);
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4, 274, 42, &StartGame1, 0, 0);
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4, 274, 42, &HelpGame1, 0, 0);
         }
-        else if (pd == 3) { 
+        else if (pd1 == 3) { 
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4, 274, 42, &HelpGame2, 0, 0); 
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 8, 274, 42, &SettingGame1, 0, 0);
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4 + HEIGHT / 8, 274, 42, &QuitGame1, 0, 0);
         }
-        else if (pd == 4) {
+        else if (pd1 == 4) {
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4 + HEIGHT / 8, 274, 42, &QuitGame2, 0, 0);
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4, 274, 42, &HelpGame1, 0, 0);
         }
     }
 //第一层UI界面
-    if (pd == 1) { ModeSelect(); return; }
+    if (pd1 == 1) { ModeSelect(); return; }
 //第二层UI界面
+    if(pd1==2){}
+}
+void GameSelect()
+{
+    
 }
 void ModeSelect()
 {
@@ -158,10 +166,14 @@ void ModeSelect()
     putimage(WIDTH/8 + WIDTH / 4, HEIGHT / 3, 297, 74, &RoundMode, 0, 0);
     while(1)
     {
-        if (_getch() == 13) 
+        char a=_getch();
+        if (a == 13) 
         {
             RoundSelect();
             break;
+        }else if(a==27)
+        {
+            MainMenu();
         }
     }
 }
@@ -180,26 +192,28 @@ void RoundSelect()
     putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4, 102, 103, &Level1_2, 0, 0);
     putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4+ HEIGHT / 4, 102, 103, &Level2_1, 0, 0);
     putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4+ HEIGHT / 2, 102, 103, &Level3_1, 0, 0);
-    int pd = 1;
+    int pd2 = 1;
     while(1)
     {
+        
         int i = _getch();
-        if (i == 119 || i == 87) { if (pd != 1)pd--; }
-        else if (i == 115 || i == 83) { if (pd != 3)pd++; }
-        else if (i == 13) { break; }
-        else {}
-        if (pd == 1) {
+        if (i == 119 || i == 87) { if (pd2 != 1)pd2--; }
+        else if (i == 115 || i == 83) { if (pd2 != 3)pd2++; }
+        else if (i == 13) { pd2=1; return; }
+        else if (i == 27) { pd2=1; ModeSelect(); }
+        else{}
+        if (pd2 == 1) {
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4, 102, 103, &Level1_2, 0, 0);
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4, 102, 103, &Level2_1, 0, 0);
             Round = 1;
         }
-        else if (pd == 2) {
+        else if (pd2 == 2) {
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4, 102, 103, &Level1_1, 0, 0);
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4, 102, 103, &Level2_2, 0, 0);
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 2, 102, 103, &Level3_1, 0, 0);
             Round = 2;
         }
-        else if (pd == 3) {
+        else if (pd2 == 3) {
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4, 102, 103, &Level1_1, 0, 0);
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4, 102, 103, &Level2_1, 0, 0);
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 2, 102, 103, &Level3_2, 0, 0);
@@ -271,6 +285,9 @@ void game()
         }
         DrawSnake(head, end);       
     }
+    IMAGE GameOver;
+    loadimage(&GameOver, _T("gameover.png"));
+    putimage(0, 0, WIDTH, HEIGHT, &GameOver, 0, 0);
     _getch();
 }
 void InitNode()
