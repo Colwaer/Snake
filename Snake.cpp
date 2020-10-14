@@ -24,6 +24,8 @@ int foodX;
 int foodY;
 int grassX;
 int grassY;
+int mineX;
+int mineY;
 int score = 0;
 int Round = 1;//关卡
 typedef struct SNAKE
@@ -58,6 +60,9 @@ void SnakeAdd(link head, link end);
 void CreateGrass(link head, link end);
 int GrassReach(link head, link end);
 void SnakeDelete(link head, link end);
+void SnakeDeleteMine(link head, link end);
+void CreateMine(link head, link end);
+int MineReach(link head, link end);
 
 int main()
 {
@@ -230,6 +235,7 @@ void game()
     DrawSnake(head, end);
     CreateFood(head, end);
     CreateGrass(head, end);
+    CreateMine(head, end);
     while(1)
     {
         Sleep(100);
@@ -238,6 +244,7 @@ void game()
         if (_kbhit())
             Key = _getch();
         DirectionChange(Key);
+        
         if (EndGame(head, end)) break;
         if(FoodReach(head,end))
         {
@@ -246,9 +253,21 @@ void game()
         }
         if(GrassReach(head,end))
         {
-            SnakeDelete(head, end);
+            SnakeDelete(head, end); CreateGrass(head, end);
             score--;
             if (score < 0)break;
+        }
+        if(MineReach(head,end))
+        {
+            if (score == 0)break;
+            int i = score + 1;
+            score /= 2;
+            i /= 2;
+            for(;i>0;i--)
+            {
+                SnakeDeleteMine(head, end);
+            }
+            CreateMine(head, end);
         }
         DrawSnake(head, end);       
     }
@@ -269,7 +288,6 @@ void InitSnake(link head,link end)
     head->next = body1; body1->next = end;
     end->last = body1; body1->last = head;
     body1->x = 320; body1->y = 360; body1->isHead = 1;
-
 }
 void DrawSnake(link head, link end)
 {
@@ -397,7 +415,6 @@ void SnakeDelete(link head,link end)
     setfillcolor(WHITE);
     solidcircle(grassX, grassY, RADIUS / 2);
     free(q);
-    CreateGrass(head, end);
 }
 int GrassReach(link head, link end)
 {
@@ -410,4 +427,37 @@ int GrassReach(link head, link end)
         p = p->next;
     }
     return 0;
+}
+void CreateMine(link head, link end)
+{
+    link p = head;
+    do
+    {
+        mineY = rand() % 500 + 50;
+        mineX = rand() % 500 + 50;
+    } while (FoodReach(head, end));
+    setfillcolor(BLACK);
+    solidcircle(mineX, mineY, RADIUS / 2);
+}
+int MineReach(link head, link end)
+{
+    link p = head->next;
+    double distance;
+    while (p != end)
+    {
+        distance = fabs(p->x - mineX) * fabs(p->x - mineX) + fabs(p->y - mineY) * fabs(p->y - mineY);
+        if (distance < (double)RADIUS * (double)RADIUS + 165) { return 1; }
+        p = p->next;
+    }
+    return 0;
+}
+void SnakeDeleteMine(link head, link end)
+{
+    link p = end->last->last, q = end->last;
+    p->next = end;
+    end->last = p;
+    DrawBlank(q->x, q->y);
+    setfillcolor(WHITE);
+    solidcircle(mineX, mineY, RADIUS / 2);
+    free(q);
 }
