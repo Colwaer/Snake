@@ -7,7 +7,12 @@
 #include<windows.h>
 #include<cmath>
 #include<list>
+#include <fstream>
+#include<algorithm>
+#include <string>
 #define PI 3.14159265
+const int MAX_NUM = 1000;//最大文件数字数
+int rankList[MAX_NUM];//排行榜
 const int sizeFont = 18;
 const int WIDTH = 1280;			// 屏幕宽1024
 const int HEIGHT = 720;			// 屏幕高576
@@ -36,6 +41,7 @@ int Round = 1;//关卡
 int growSpeed=50;
 int snakeSpeed = 300;
 int pd3 = 1;//游戏难度
+
 typedef struct SNAKE
 {
     int x, y;
@@ -80,6 +86,7 @@ void SnakeDelete2(link head, link end);
 void CreateGrass3(link head, link end);
 void SnakeDelete3(link head, link end);
 int GrassReach3(link head, link end);
+void Rank();
 
 int main()
 {
@@ -389,14 +396,18 @@ void game()
             CreateMine(head, end);
         }
         DrawSnake(head, end);
-        char sc[10]; sprintf(sc, "%d", score);
-        outtextxy(1100,360,*sc);
+        char num[10];
+        sprintf_s(num, "%d", score);
+        outtextxy(1100,360,*num);
+        
     }
     
     IMAGE GameOver;
     loadimage(&GameOver, _T("gameover.png"));
     putimage(0, 0, WIDTH, HEIGHT, &GameOver, 0, 0);
+    Rank();
     _getch();
+
     MainMenu();
 }
 void InitNode()
@@ -648,11 +659,29 @@ int MineReach(link head, link end)
 }
 void SnakeDeleteMine(link head, link end)
 {
-    link p = end->last->last, q = end->last;
-    p->next = end;
-    end->last = p;
-    DrawBlank(q->x, q->y);
-    setfillcolor(WHITE);
-    solidcircle(mineX, mineY, RADIUS / 2);
-    free(q);
+    try {
+        link p = end->last->last, q = end->last;
+        p->next = end;
+
+        end->last = p;
+        DrawBlank(q->x, q->y);
+        setfillcolor(WHITE);
+        solidcircle(mineX, mineY, RADIUS / 2);
+        free(q);
+    }
+    catch (double) { MainMenu(); }
+}
+void Rank()
+{
+    using namespace std;
+    int total=0;
+    ofstream fout("rank.txt", ios::out);
+    int x;
+    for (int i = 0; i < 6; i++) { fout << rankList[i]; fout << ' '; }
+    if (score > rankList[6])rankList[6] = score;
+    sort(rankList, rankList + 6);
+    ifstream fin("rank.txt", ios::in);
+    for (int i = 0; i < 6; i++) { fin >> rankList[i]; }
+    outtextxy(640, 200, *rankList);
+    fout.close();
 }
