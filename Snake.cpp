@@ -160,7 +160,7 @@ void MainMenu()
     if (pd1 == 1) { ModeSelect(); }
     if (pd1 == 2) { GameSetting(); }
     if (pd1 == 3) { GameHelp(); }
-    if (pd1 == 4) {  }
+    if (pd1 == 4) { exit(0); }
 }
 void GameSetting()
 {
@@ -172,7 +172,10 @@ void GameSetting()
     loadimage(&levelNormal1, _T("levelNormal1.png")); loadimage(&levelNormal2, _T("levelNormal2.png"));
     putimage(0, 0, WIDTH, HEIGHT, &SettingGame, 0, 0);
     putimage(WIDTH / 4, HEIGHT / 4, 264, 40, &SettingDifficulty, 0, 0);
-    putimage(WIDTH / 5+WIDTH/10, HEIGHT / 4+ HEIGHT / 5, 87, 87, &levelLow2, 0, 0);
+    putimage(WIDTH / 5 + WIDTH / 10, HEIGHT / 4+ HEIGHT / 5, 87, 87, &levelLow2, 0, 0);
+    putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelNormal1, 0, 0);
+    putimage(WIDTH / 5 + WIDTH / 4+WIDTH/7, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelHigh1, 0, 0);
+    
     char Key;
     while(1)
     {
