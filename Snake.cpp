@@ -18,16 +18,22 @@ double directionx = 0;
 double directiony = 100;
 double Judgex = 0;
 double Judgey = 100;
+int grassSize=8;
 char direction='w';
 char Key;
 int foodX;
 int foodY;
 int grassX;
 int grassY;
+int grass2X;
+int grass2Y;
+int grass3X;
+int grass3Y;
 int mineX;
 int mineY;
 int score = 0;
 int Round = 1;//关卡
+int growSpeed=50;
 typedef struct SNAKE
 {
     int x, y;
@@ -63,7 +69,15 @@ void SnakeDelete(link head, link end);
 void SnakeDeleteMine(link head, link end);
 void CreateMine(link head, link end);
 int MineReach(link head, link end);
+void CreateGrass2(link head, link end);
+int GrassReach2(link head, link end);
 void GameSelect();
+void GameSetting();
+void GameHelp();
+void SnakeDelete2(link head, link end);
+void CreateGrass3(link head, link end);
+void SnakeDelete3(link head, link end);
+int GrassReach3(link head, link end);
 
 int main()
 {
@@ -71,12 +85,7 @@ int main()
     initgraph(WIDTH, HEIGHT);
     Init();
     _getch();
-    origin:
-    int pd = 0;
     MainMenu();
-    game();
-    goto origin;
-    _getch();
     closegraph();
     return 0;
 }
@@ -147,10 +156,56 @@ void MainMenu()
             putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4, 274, 42, &HelpGame1, 0, 0);
         }
     }
-//第一层UI界面
-    if (pd1 == 1) { ModeSelect(); return; }
-//第二层UI界面
-    if(pd1==2){}
+//开始游戏
+    if (pd1 == 1) { ModeSelect(); }
+    if (pd1 == 2) { GameSetting(); }
+    if (pd1 == 3) { GameHelp(); }
+    if (pd1 == 4) {  }
+}
+void GameSetting()
+{
+    IMAGE SettingGame,SettingDifficulty, levelHigh1, levelHigh2, levelLow1, levelLow2, levelNormal1,levelNormal2;
+    loadimage(&SettingGame, _T("set.png"));
+    loadimage(&SettingDifficulty, _T("levelSet.png"));
+    loadimage(&levelHigh1, _T("levelHigh1.png")); loadimage(&levelHigh2, _T("levelHigh2.png"));
+    loadimage(&levelLow1, _T("levelLow1.png")); loadimage(&levelLow2, _T("levelLow2.png"));
+    loadimage(&levelNormal1, _T("levelNormal1.png")); loadimage(&levelNormal2, _T("levelNormal2.png"));
+    putimage(0, 0, WIDTH, HEIGHT, &SettingGame, 0, 0);
+    putimage(WIDTH / 4, HEIGHT / 4, 264, 40, &SettingDifficulty, 0, 0);
+    putimage(WIDTH / 5+WIDTH/10, HEIGHT / 4+ HEIGHT / 5, 87, 87, &levelLow2, 0, 0);
+    char Key;
+    while(1)
+    {
+        Key = _getch();
+        if (Key==13)
+        {
+            //-----------------------------------
+            MainMenu();
+        }else if(Key==27)
+        {
+            MainMenu();
+        }
+    }
+}
+void GameHelp()
+{
+    IMAGE HelpGame;
+    loadimage(&HelpGame, _T("snakeRisk.png"));
+    putimage(0, 0, WIDTH, HEIGHT, &HelpGame, 0, 0);
+    char Key;
+    while (1)
+    {
+        Key = _getch();
+        if (Key == 13)
+        {
+            //-----------------------------------
+            MainMenu();
+        }
+        else if (Key == 27)
+        {
+            MainMenu();
+        }
+    }
 }
 void GameSelect()
 {
@@ -199,7 +254,7 @@ void RoundSelect()
         int i = _getch();
         if (i == 119 || i == 87) { if (pd2 != 1)pd2--; }
         else if (i == 115 || i == 83) { if (pd2 != 3)pd2++; }
-        else if (i == 13) { pd2=1; return; }
+        else if (i == 13) { pd2 = 1; grassSize = 8; game(); }
         else if (i == 27) { pd2=1; ModeSelect(); }
         else{}
         if (pd2 == 1) {
@@ -249,6 +304,8 @@ void game()
     DrawSnake(head, end);
     CreateFood(head, end);
     CreateGrass(head, end);
+    if(Round>1)CreateGrass2(head, end);
+    if(Round>2)CreateGrass3(head, end);
     CreateMine(head, end);
     while(1)
     {
@@ -271,6 +328,32 @@ void game()
             score--;
             if (score < 0)break;
         }
+        if (Round > 1) 
+        {
+            if (GrassReach2(head, end))
+            {
+                SnakeDelete2(head, end); CreateGrass2(head, end);
+                score--;
+                if (score < 0)break;
+            }
+        }
+        if (Round > 2)
+        {
+            if (GrassReach3(head, end))
+            {
+                SnakeDelete3(head, end); CreateGrass3(head, end);
+                score--;
+                if (score < 0)break;
+            }
+        }
+        if (rand() % growSpeed == 1) 
+        {
+            grassSize++; 
+            setfillcolor(GREEN);
+            solidcircle(grassX, grassY, grassSize);
+            solidcircle(grass2X, grass2Y, grassSize);
+            solidcircle(grass3X, grass3Y, grassSize);
+        }
         if(MineReach(head,end))
         {
             if (score == 0)break;
@@ -289,6 +372,7 @@ void game()
     loadimage(&GameOver, _T("gameover.png"));
     putimage(0, 0, WIDTH, HEIGHT, &GameOver, 0, 0);
     _getch();
+    MainMenu();
 }
 void InitNode()
 {
@@ -421,7 +505,29 @@ void CreateGrass(link head,link end)
         grassY = rand() % 640 + 50;
     } while (GrassReach(head, end));
     setfillcolor(GREEN);
-    solidcircle(grassX, grassY, RADIUS / 2);
+    solidcircle(grassX, grassY, grassSize);
+}
+void CreateGrass2(link head, link end)
+{
+    link p = head;
+    do
+    {
+        grass2X = rand() % 820 + 50;
+        grass2Y = rand() % 640 + 50;
+    } while (GrassReach2(head, end));
+    setfillcolor(GREEN);
+    solidcircle(grass2X, grass2Y, grassSize);
+}
+void CreateGrass3(link head, link end)
+{
+    link p = head;
+    do
+    {
+        grass3X = rand() % 820 + 50;
+        grass3Y = rand() % 640 + 50;
+    } while (GrassReach2(head, end));
+    setfillcolor(GREEN);
+    solidcircle(grass3X, grass3Y, grassSize);
 }
 void SnakeDelete(link head,link end)
 {
@@ -430,7 +536,27 @@ void SnakeDelete(link head,link end)
     end->last = p;
     DrawBlank(q->x, q->y);
     setfillcolor(WHITE);
-    solidcircle(grassX, grassY, RADIUS / 2);
+    solidcircle(grassX, grassY, grassSize);
+    free(q);
+}
+void SnakeDelete2(link head, link end)
+{
+    link p = end->last->last, q = end->last;
+    p->next = end;
+    end->last = p;
+    DrawBlank(q->x, q->y);
+    setfillcolor(WHITE);
+    solidcircle(grass2X, grass2Y, grassSize);
+    free(q);
+}
+void SnakeDelete3(link head, link end)
+{
+    link p = end->last->last, q = end->last;
+    p->next = end;
+    end->last = p;
+    DrawBlank(q->x, q->y);
+    setfillcolor(WHITE);
+    solidcircle(grass3X, grass3Y, grassSize);
     free(q);
 }
 int GrassReach(link head, link end)
@@ -440,7 +566,34 @@ int GrassReach(link head, link end)
     while (p != end)
     {
         distance = fabs(p->x - grassX) * fabs(p->x - grassX) + fabs(p->y - grassY) * fabs(p->y - grassY);
-        if (distance < (double)RADIUS * (double)RADIUS + 165) { return 1; }
+        distance = sqrt(distance);
+        if (distance <(double)RADIUS+1 + grassSize) { return 1; }
+        p = p->next;
+    }
+    return 0;
+}
+int GrassReach2(link head, link end)
+{
+    link p = head->next;
+    double distance;
+    while (p != end)
+    {
+        distance = fabs(p->x - grass2X) * fabs(p->x - grass2X) + fabs(p->y - grass2Y) * fabs(p->y - grass2Y);
+        distance = sqrt(distance);
+        if (distance <(double)RADIUS+1 + grassSize) { return 1; }
+        p = p->next;
+    }
+    return 0;
+}
+int GrassReach3(link head, link end)
+{
+    link p = head->next;
+    double distance;
+    while (p != end)
+    {
+        distance = fabs(p->x - grass3X) * fabs(p->x - grass3X) + fabs(p->y - grass3Y) * fabs(p->y - grass3Y);
+        distance = sqrt(distance);
+        if (distance < (double)RADIUS + 1 + grassSize) { return 1; }
         p = p->next;
     }
     return 0;
