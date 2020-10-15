@@ -34,6 +34,8 @@ int mineY;
 int score = 0;
 int Round = 1;//关卡
 int growSpeed=50;
+int snakeSpeed = 300;
+int pd3 = 1;//游戏难度
 typedef struct SNAKE
 {
     int x, y;
@@ -81,6 +83,7 @@ int GrassReach3(link head, link end);
 
 int main()
 {
+
     srand((unsigned)time(NULL));
     initgraph(WIDTH, HEIGHT);
     Init();
@@ -172,23 +175,38 @@ void GameSetting()
     loadimage(&levelNormal1, _T("levelNormal1.png")); loadimage(&levelNormal2, _T("levelNormal2.png"));
     putimage(0, 0, WIDTH, HEIGHT, &SettingGame, 0, 0);
     putimage(WIDTH / 4, HEIGHT / 4, 264, 40, &SettingDifficulty, 0, 0);
-    putimage(WIDTH / 5 + WIDTH / 10, HEIGHT / 4+ HEIGHT / 5, 87, 87, &levelLow2, 0, 0);
+    putimage(WIDTH / 5 + WIDTH / 10, HEIGHT / 4+ HEIGHT / 5, 87, 87, &levelLow1, 0, 0);
     putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelNormal1, 0, 0);
     putimage(WIDTH / 5 + WIDTH / 4+WIDTH/7, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelHigh1, 0, 0);
-    
-    char Key;
-    while(1)
+    if(pd3==1)putimage(WIDTH / 5 + WIDTH / 10, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelLow2, 0, 0);
+    else if (pd3 == 2)putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelNormal2, 0, 0);
+    else if (pd3 == 3)putimage(WIDTH / 5 + WIDTH / 4 + WIDTH / 7, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelHigh2, 0, 0);
+    while (1)
     {
-        Key = _getch();
-        if (Key==13)
-        {
-            //-----------------------------------
-            MainMenu();
-        }else if(Key==27)
-        {
-            MainMenu();
+        int i = _getch();
+        if (i == 65 || i == 97) { if (pd3 != 1)pd3--; }
+        else if (i == 68 || i == 100) { if (pd3 != 3)pd3++; }
+        else if (i == 13||i==27) { break; }
+        else {}
+        if (pd3 == 1) {
+            putimage(WIDTH / 5 + WIDTH / 10, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelLow2, 0, 0);
+            putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelNormal1, 0, 0);
+            snakeSpeed = 300; growSpeed = 50;
+        }
+        else if (pd3 == 2) {
+            putimage(WIDTH / 5 + WIDTH / 10, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelLow1, 0, 0);
+            putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelNormal2, 0, 0);
+            putimage(WIDTH / 5 + WIDTH / 4 + WIDTH / 7, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelHigh1, 0, 0);
+            snakeSpeed = 100; growSpeed = 15;
+        }
+        else if (pd3 == 3) {
+            putimage(WIDTH / 5 + WIDTH / 10, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelLow1, 0, 0);
+            putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelNormal1, 0, 0);
+            putimage(WIDTH / 5 + WIDTH / 4 + WIDTH / 7, HEIGHT / 4 + HEIGHT / 5, 87, 87, &levelHigh2, 0, 0);
+            snakeSpeed = 50; growSpeed = 8;
         }
     }
+    MainMenu();
 }
 void GameHelp()
 {
@@ -310,9 +328,10 @@ void game()
     if(Round>1)CreateGrass2(head, end);
     if(Round>2)CreateGrass3(head, end);
     CreateMine(head, end);
+    outtextxy(1000, 360, L"分数：");
     while(1)
     {
-        Sleep(100);
+        Sleep(snakeSpeed);
         ClearSnake(head, end);
         MoveSnake(head, end);
         if (_kbhit())
@@ -354,8 +373,8 @@ void game()
             grassSize++; 
             setfillcolor(GREEN);
             solidcircle(grassX, grassY, grassSize);
-            solidcircle(grass2X, grass2Y, grassSize);
-            solidcircle(grass3X, grass3Y, grassSize);
+            if(Round>1)solidcircle(grass2X, grass2Y, grassSize);
+            if(Round>2)solidcircle(grass3X, grass3Y, grassSize);
         }
         if(MineReach(head,end))
         {
@@ -369,8 +388,11 @@ void game()
             }
             CreateMine(head, end);
         }
-        DrawSnake(head, end);       
+        DrawSnake(head, end);
+        char sc[10]; sprintf(sc, "%d", score);
+        outtextxy(1100,360,*sc);
     }
+    
     IMAGE GameOver;
     loadimage(&GameOver, _T("gameover.png"));
     putimage(0, 0, WIDTH, HEIGHT, &GameOver, 0, 0);
