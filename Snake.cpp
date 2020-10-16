@@ -11,8 +11,7 @@
 #include<algorithm>
 #include <string>
 #define PI 3.14159265
-const int MAX_NUM = 1000;//最大文件数字数
-int rankList[MAX_NUM];//排行榜
+char rankList[6];//排行榜
 const int sizeFont = 18;
 const int WIDTH = 1280;			// 屏幕宽1024
 const int HEIGHT = 720;			// 屏幕高576
@@ -325,7 +324,7 @@ void DrawBlank(int x, int y)
     solidcircle(x, y, RADIUS);
 } 
 void game()
-{      
+{     
     DrawMap(); 
     InitNode();
     InitSnake(head,end);
@@ -398,6 +397,8 @@ void game()
         DrawSnake(head, end);
         char num[10];
         sprintf_s(num, "%d", score);
+        if (score >= 10) { outtextxy(1115, 360, *(num + 1)); }
+        else { outtextxy(1115, 360, L"X"); }
         outtextxy(1100,360,*num);
         
     }
@@ -405,6 +406,7 @@ void game()
     IMAGE GameOver;
     loadimage(&GameOver, _T("gameover.png"));
     putimage(0, 0, WIDTH, HEIGHT, &GameOver, 0, 0);
+    _getch();
     Rank();
     _getch();
 
@@ -661,6 +663,7 @@ void SnakeDeleteMine(link head, link end)
 {
     try {
         link p = end->last->last, q = end->last;
+        if (p == NULL) { MainMenu(); }
         p->next = end;
 
         end->last = p;
@@ -675,13 +678,22 @@ void Rank()
 {
     using namespace std;
     int total=0;
+    ifstream fin("rank.txt", ios::in);
+    for (int i = 0; i < 5; i++) { fin >> rankList[i]; }
+    rankList[5] = score/5+'0';
+    sort(rankList, rankList + 6, greater<char>());
     ofstream fout("rank.txt", ios::out);
     int x;
-    for (int i = 0; i < 6; i++) { fout << rankList[i]; fout << ' '; }
-    if (score > rankList[6])rankList[6] = score;
-    sort(rankList, rankList + 6);
-    ifstream fin("rank.txt", ios::in);
-    for (int i = 0; i < 6; i++) { fin >> rankList[i]; }
-    outtextxy(640, 200, *rankList);
+    for (int i = 0; i < 5; i++) { fout << rankList[i]; fout << ' '; }
+    sort(rankList, rankList + 6,greater<char>());
+    IMAGE RankBK;
+    loadimage(&RankBK, _T("gameRank.png"));
+    putimage(0, 0, WIDTH, HEIGHT, &RankBK, 0, 0);
+    settextcolor(BodyBlue);
+    for (int i = 0; i < 5; i++) 
+    {   
+        outtextxy(610, 200 + i * 50, *(rankList + i));
+        outtextxy(630, 200 + i * 50, L"CM");
+    }
     fout.close();
 }
