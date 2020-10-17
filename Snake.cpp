@@ -16,6 +16,7 @@ const int sizeFont = 18;
 const int WIDTH = 1280;			// 屏幕宽1024
 const int HEIGHT = 720;			// 屏幕高576
 const int MAPW = (WIDTH * 4);	// 地图宽
+
 const int MAPH = (HEIGHT * 4);	// 地图高
 const int DOORSIZE = 30;
 int RADIUS = 15;
@@ -25,6 +26,7 @@ double Judgex = 0;
 double Judgey = 100;
 int grassSize=8;
 char direction='w';
+int WD360 = 54;
 char Key;
 int foodX;
 int foodY;
@@ -38,6 +40,8 @@ int mineX;
 int mineY;
 int doorX;
 int doorY;
+int smartX;
+int smartY;
 int score = 0;
 int Round = 1;//关卡
 int growSpeed=50;
@@ -92,6 +96,9 @@ void Rank();
 void CreateDoor(link head, link end);
 int DoorReach(link head, link end);
 void SaveRound();
+void Paiticle(link head, link end); 
+int SmartReach(link head, link end);
+void CreateSmart(link head, link end);
 
 int main()
 {
@@ -351,6 +358,7 @@ void game()
     DrawSnake(head, end);
     CreateFood(head, end);
     CreateGrass(head, end);
+    CreateSmart(head, end);
     if(Round>1)CreateGrass2(head, end);
     if(Round>2)CreateGrass3(head, end);
     CreateMine(head, end);
@@ -369,9 +377,105 @@ void game()
             SaveRound();
             break;
         }
+        if (SmartReach(head, end)) 
+        { 
+            link p = head->next;
+            int i = 3;
+            while(i>0||score>18)
+            {
+                Sleep(snakeSpeed);
+                ClearSnake(head, end);
+                MoveSnake(head, end);
+                //CONTROL------------------------------------------
+
+                if (p->x < foodX) {
+                    if (direction == 'a')Key = 'w';
+                    else Key = 'd';
+                }
+                if (p->x > foodX) {
+                    if (direction == 'd')Key = 'w';
+                    else Key = 'a';
+                }
+                if (p->y > foodY) {
+                    if (direction == 's')Key = 'd';
+                    else Key = 'w';
+                }
+                if (p->y < foodY) {
+                    if (direction == 'w')Key = 'd';
+                    else Key = 's';
+                }
+                //CONTROL------------------------------------------
+                DirectionChange(Key);
+
+                if (EndGame(head, end))
+                {
+                    SaveRound();
+                    break;
+                }
+                if (FoodReach(head, end))
+                {
+                    SnakeAdd(head, end);
+                    //            Paiticle(head, end);
+                    score++;
+                    i--;
+                }
+                if (GrassReach(head, end))
+                {
+                    SnakeDelete(head, end); CreateGrass(head, end);
+                    score--;
+                    if (score < 0)break;
+                }
+                if (Round > 1)
+                {
+                    if (GrassReach2(head, end))
+                    {
+                        SnakeDelete2(head, end); CreateGrass2(head, end);
+                        score--;
+                        if (score < 0)break;
+                    }
+                }
+                if (Round > 2)
+                {
+                    if (GrassReach3(head, end))
+                    {
+                        SnakeDelete3(head, end); CreateGrass3(head, end);
+                        score--;
+                        if (score < 0)break;
+                    }
+                }
+                if (rand() % growSpeed == 1)
+                {
+                    grassSize++;
+                    setfillcolor(GREEN);
+                    solidcircle(grassX, grassY, grassSize);
+                    if (Round > 1)solidcircle(grass2X, grass2Y, grassSize);
+                    if (Round > 2)solidcircle(grass3X, grass3Y, grassSize);
+                }
+                if (MineReach(head, end))
+                {
+                    if (score == 0)break;
+                    int i = score + 1;
+                    score /= 2;
+                    i /= 2;
+                    for (; i > 0; i--)
+                    {
+                        SnakeDeleteMine(head, end);
+                    }
+                    CreateMine(head, end);
+                }
+                DrawSnake(head, end);
+                char num[10];
+                sprintf_s(num, "%d", score);
+                if (score >= 10) { outtextxy(1115, 360, *(num + 1)); }
+                else { outtextxy(1115, 360, L"X"); }
+                outtextxy(1100, 360, *num);
+            }
+            CreateSmart(head,end); 
+        }
         if(FoodReach(head,end))
         {
             SnakeAdd(head, end);
+//            Paiticle(head, end);
             score++;
         }
         if(GrassReach(head,end))
@@ -518,10 +622,38 @@ void MoveSnake(link head,link end)
         q->y = q->last->y;
         q = q->last;
     }
-        if(direction=='w')p->y -= RADIUS;
-        else if (direction == 's')p->y += RADIUS;
-        else if (direction == 'a')p->x -= RADIUS;
-        else if (direction == 'd')p->x += RADIUS;
+    /*
+    int i = WD360 % 24;
+    double degree = PI * 3 / i;
+    if (direction == 'w') 
+    { 
+        if ((WD360 % 24) < 16 && (WD360 % 24) > 6) { WD360 -= 2; }
+        else if ((WD360 % 24) > 20 || (WD360 % 24) < 6) { WD360 += 2; }
+        p->x += sin(degree)*10.0; p->y -= cos(degree) * 10.0;
+    }
+    else if (direction == 's') 
+    {
+        if ((WD360 % 24) < 18 && (WD360 % 24) > 8) { WD360 += 2; }
+        else if ((WD360 % 24) > 18 || (WD360 % 24) < 4) { WD360 -= 2; }
+        p->x += sin(degree) * 10.0; p->y -= cos(degree) * 10.0;
+    }
+    else if (direction == 'a') 
+    {
+        if ((WD360 % 24) < 12 && (WD360 % 24) > 2) { WD360 += 2; }
+        else if ((WD360 % 24) > 12 && (WD360 % 24) < 22) { WD360 -= 2; }
+        p->x += sin(degree) * 10.0; p->y -= cos(degree) * 10.0;
+    }
+    else if (direction == 'd') 
+    {
+        if ((WD360 % 24) < 10 && (WD360 % 24) > 0) { WD360 -= 2; }
+        else if ((WD360 % 24) > 14) { WD360 += 2; }
+        p->x += sin(degree) * 10.0; p->y -= cos(degree) * 10.0;
+    }
+    */
+    if (direction == 'w')p->y -= RADIUS;
+    else if (direction == 's')p->y += RADIUS;
+    else if (direction == 'a')p->x -= RADIUS;
+    else if (direction == 'd')p->x += RADIUS;
 }
 void ClearSnake(link head, link end)
 {
@@ -800,4 +932,61 @@ void SaveRound()
     ofstream fout("Round.txt", ios::out);
     fout << Round; fout << ' ';
     fout.close();
+}
+void Paiticle(link head,link end)
+{
+    link p = head->next;
+    setfillcolor(RED);
+    solidcircle(p->x+10, p->y+10, 2); solidcircle(p->x+15, p->y, 1);
+    solidcircle(p->x-5, p->y, 1); solidcircle(p->x-7, p->y+9, 2);
+    solidcircle(p->x, p->y-17, 3); solidcircle(p->x-20, p->y - 5, 1);
+    solidcircle(p->x-5, p->y + 5, 1); solidcircle(p->x + 10, p->y + 5, 1);
+    solidcircle(p->x + 9, p->y - 5, 1);
+    setfillcolor(YELLOW);
+    solidcircle(p->x, p->y+15, 1); solidcircle(p->x + 5, p->y-10, 1);
+    solidcircle(p->x - 7, p->y, 1); solidcircle(p->x-9, p->y + 5, 2);
+    solidcircle(p->x+10, p->y - 3, 2); solidcircle(p->x - 1, p->y - 5, 3);
+    solidcircle(p->x - 5, p->y + 7, 1); solidcircle(p->x + 11, p->y + 5, 1);
+    solidcircle(p->x + 10, p->y - 5, 2);
+    Sleep(snakeSpeed);
+    setfillcolor(WHITE);
+    solidcircle(p->x, p->y + 15, 1); solidcircle(p->x + 5, p->y - 10, 1);
+    solidcircle(p->x - 7, p->y, 1); solidcircle(p->x - 9, p->y + 5, 2);
+    solidcircle(p->x + 10, p->y - 3, 2); solidcircle(p->x - 1, p->y - 5, 3);
+    solidcircle(p->x - 5, p->y + 7, 1); solidcircle(p->x + 11, p->y + 5, 1);
+    solidcircle(p->x + 10, p->y - 5, 2);
+    solidcircle(p->x + 10, p->y + 10, 2); solidcircle(p->x + 15, p->y, 1);
+    solidcircle(p->x - 5, p->y, 1); solidcircle(p->x - 7, p->y + 9, 2);
+    solidcircle(p->x, p->y - 17, 3); solidcircle(p->x - 20, p->y - 5, 1);
+    solidcircle(p->x - 5, p->y + 5, 1); solidcircle(p->x + 10, p->y + 5, 1);
+    solidcircle(p->x + 9, p->y - 5, 1);
+}
+void CreateSmart(link head, link end)
+{
+    if(smartX!=0)
+    {
+        setfillcolor(WHITE);
+        solidcircle(smartX, smartY, RADIUS/5);
+    }
+    link p = head;
+    do
+    {
+        smartX = rand() % 820 + 50;
+        smartY = rand() % 640 + 50;
+    } while (SmartReach(head, end));
+    setfillcolor(LIGHTGREEN);
+    solidcircle(smartX, smartY, RADIUS/5);
+}
+int SmartReach(link head, link end)
+{
+    link p = head->next;
+    double distance;
+    while (p != end)
+    {
+        distance = fabs(p->x - smartX) * fabs(p->x - smartX) + fabs(p->y - smartY) * fabs(p->y - smartY);
+        distance = sqrt(distance);
+        if (distance < (double)RADIUS + 1 + RADIUS/5) { return 1; }
+        p = p->next;
+    }
+    return 0;
 }
