@@ -99,6 +99,7 @@ void SaveRound();
 void Paiticle(link head, link end); 
 int SmartReach(link head, link end);
 void CreateSmart(link head, link end);
+void IngameUI();
 
 int main()
 {
@@ -363,6 +364,7 @@ void game()
     if(Round>2)CreateGrass3(head, end);
     CreateMine(head, end);
     outtextxy(1000, 360, L"分数：");
+    Key = direction;
     while(1)
     {
         Sleep(snakeSpeed);
@@ -370,6 +372,10 @@ void game()
         MoveSnake(head, end);
         if (_kbhit())
             Key = _getch();
+        if(Key==27){
+            IngameUI();
+            Key = direction;
+        }
         DirectionChange(Key);
         
         if (EndGame(head, end)) 
@@ -492,7 +498,7 @@ void game()
                 if (score < 0)break;
             }
         }
-        if (rand() % growSpeed == 1) 
+        if (rand() % growSpeed == 1)
         {
             grassSize++; 
             setfillcolor(GREEN);
@@ -575,6 +581,46 @@ void game()
     _getch();
 
     MainMenu();
+}
+void IngameUI()
+{
+    IMAGE GameUI;
+    IMAGE OriginGamescene;
+    saveimage(_T("temp.png"));
+    loadimage(&GameUI, _T("GameUI.png"));
+    loadimage(&OriginGamescene, _T("temp.png"));
+    putimage(0, 0, WIDTH, HEIGHT, &GameUI, 0, 0);
+    IMAGE gameBack1, gameBack2, gameBackMenu1, gameBackMenu2;
+    loadimage(&gameBack1, _T("gameBack1.png"));
+    loadimage(&gameBack2, _T("gameBack2.png"));
+    loadimage(&gameBackMenu1, _T("gameBackMenu1.png"));
+    loadimage(&gameBackMenu2, _T("gameBackMenu2.png"));
+    putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4, 259, 49, &gameBack2, 0, 0);
+    putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4 + HEIGHT / 8, 259, 49, &gameBackMenu1, 0, 0);
+    int pd4 = 1;
+    while(1)
+    {
+        int i = _getch();
+        if (i == 119 || i == 87) { if (pd4 != 1)pd4--; }
+        else if (i == 115 || i == 83) { if (pd4 != 2)pd4++; }
+        else if (i == 13) { break; }
+        else if (i == 27) { putimage(0, 0, WIDTH, HEIGHT, &OriginGamescene, 0, 0); return; }
+        else {}
+        if(pd4==1){
+            putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4, 259, 49, &gameBack2, 0, 0);
+            putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4 + HEIGHT / 8, 259, 49, &gameBackMenu1, 0, 0);
+        }
+        else if(pd4==2){
+            putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4, 259, 49, &gameBack1, 0, 0);
+            putimage(WIDTH / 8 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4 + HEIGHT / 8, 259, 49, &gameBackMenu2, 0, 0);
+        }
+    }
+    if (pd4 == 1) {
+        putimage(0, 0, WIDTH, HEIGHT, &OriginGamescene, 0, 0);
+    }
+    else if (pd4 == 2) {
+        MainMenu();
+    }
 }
 void InitNode()
 {
