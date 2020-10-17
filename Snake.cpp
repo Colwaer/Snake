@@ -378,7 +378,8 @@ void game()
             break;
         }
         if (SmartReach(head, end)) 
-        { 
+        {
+            /*
             link p = head->next;
             int i = 3;
             while(i>0||score>18)
@@ -387,23 +388,11 @@ void game()
                 ClearSnake(head, end);
                 MoveSnake(head, end);
                 //CONTROL------------------------------------------
-
-                if (p->x < foodX) {
-                    if (direction == 'a')Key = 'w';
-                    else Key = 'd';
-                }
-                if (p->x > foodX) {
-                    if (direction == 'd')Key = 'w';
-                    else Key = 'a';
-                }
-                if (p->y > foodY) {
-                    if (direction == 's')Key = 'd';
-                    else Key = 'w';
-                }
-                if (p->y < foodY) {
-                    if (direction == 'w')Key = 'd';
-                    else Key = 's';
-                }
+                
+                if (p->x < foodX)Key = 'd';
+                else if (p->x > foodX)Key = 'a';
+                else if (p->y > foodY)Key = 'w';
+                else if (p->y < foodY)Key = 's';
                 //CONTROL------------------------------------------
                 DirectionChange(Key);
 
@@ -470,6 +459,7 @@ void game()
                 else { outtextxy(1115, 360, L"X"); }
                 outtextxy(1100, 360, *num);
             }
+            */
             CreateSmart(head,end); 
         }
         if(FoodReach(head,end))
