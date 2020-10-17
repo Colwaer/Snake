@@ -17,6 +17,7 @@ const int WIDTH = 1280;			// 屏幕宽1024
 const int HEIGHT = 720;			// 屏幕高576
 const int MAPW = (WIDTH * 4);	// 地图宽
 const int MAPH = (HEIGHT * 4);	// 地图高
+const int DOORSIZE = 30;
 int RADIUS = 15;
 double directionx = 0;
 double directiony = 100;
@@ -35,6 +36,8 @@ int grass3X;
 int grass3Y;
 int mineX;
 int mineY;
+int doorX;
+int doorY;
 int score = 0;
 int Round = 1;//关卡
 int growSpeed=50;
@@ -86,6 +89,9 @@ void CreateGrass3(link head, link end);
 void SnakeDelete3(link head, link end);
 int GrassReach3(link head, link end);
 void Rank();
+void CreateDoor(link head, link end);
+int DoorReach(link head, link end);
+void SaveRound();
 
 int main()
 {
@@ -265,26 +271,31 @@ void RoundSelect()
     loadimage(&RoundSelect, _T("MainMenuBK.png"));
     putimage(0, 0, WIDTH, HEIGHT, &RoundSelect, 0, 0);
     IMAGE Level1_1, Level1_2, Level2_1, Level2_2, Level3_1, Level3_2;
+    IMAGE LoadButton1, LoadButton2;
+    loadimage(&LoadButton1, _T("loadButton1.png"));
+    loadimage(&LoadButton2, _T("loadButton2.png"));
     loadimage(&Level1_1, _T("Level1_3.png"));
     loadimage(&Level1_2, _T("Level1_2.png"));
     loadimage(&Level2_1, _T("Level2_3.png"));
     loadimage(&Level2_2, _T("Level2_2.png"));
     loadimage(&Level3_1, _T("Level3_3.png"));
     loadimage(&Level3_2, _T("Level3_2.png"));
-    putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4, 102, 103, &Level1_2, 0, 0);
+    putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 9, 109, 43, &LoadButton2, 0, 0);
+    putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4, 102, 103, &Level1_1, 0, 0);
     putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4+ HEIGHT / 4, 102, 103, &Level2_1, 0, 0);
     putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4+ HEIGHT / 2, 102, 103, &Level3_1, 0, 0);
-    int pd2 = 1;
+    int pd2 = 0;
     while(1)
     {
         
         int i = _getch();
-        if (i == 119 || i == 87) { if (pd2 != 1)pd2--; }
+        if (i == 119 || i == 87) { if (pd2 != 0)pd2--; }
         else if (i == 115 || i == 83) { if (pd2 != 3)pd2++; }
         else if (i == 13) { pd2 = 1; grassSize = 8; game(); }
         else if (i == 27) { pd2=1; ModeSelect(); }
         else{}
         if (pd2 == 1) {
+            putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 9, 109, 43, &LoadButton1, 0, 0);
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4, 102, 103, &Level1_2, 0, 0);
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4, 102, 103, &Level2_1, 0, 0);
             Round = 1;
@@ -300,6 +311,14 @@ void RoundSelect()
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 4, 102, 103, &Level2_1, 0, 0);
             putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4 + HEIGHT / 2, 102, 103, &Level3_2, 0, 0);
             Round = 3;
+        }
+        else if (pd2 == 0) {
+            putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 9, 109, 43, &LoadButton2, 0, 0);
+            putimage(WIDTH / 5 + WIDTH / 4, HEIGHT / 4, 102, 103, &Level1_1, 0, 0);
+            using namespace std;
+            ifstream fin("Round.txt", ios::in);
+            fin >> Round;
+            fin.close();
         }
     }
 
@@ -325,7 +344,8 @@ void DrawBlank(int x, int y)
 } 
 void game()
 {     
-    DrawMap(); 
+    DrawMap();
+    score = 0;
     InitNode();
     InitSnake(head,end);
     DrawSnake(head, end);
@@ -344,7 +364,11 @@ void game()
             Key = _getch();
         DirectionChange(Key);
         
-        if (EndGame(head, end)) break;
+        if (EndGame(head, end)) 
+        {
+            SaveRound();
+            break;
+        }
         if(FoodReach(head,end))
         {
             SnakeAdd(head, end);
@@ -400,9 +424,55 @@ void game()
         if (score >= 10) { outtextxy(1115, 360, *(num + 1)); }
         else { outtextxy(1115, 360, L"X"); }
         outtextxy(1100,360,*num);
-        
+        if(score>=20)
+        {
+            CreateDoor(head, end);
+            setfillcolor(WHITE);
+            solidcircle(mineX, mineY, RADIUS / 2);
+            solidcircle(foodX, foodY, RADIUS / 2);
+            solidcircle(grassX, grassY, grassSize);
+            solidcircle(grass2X, grass2Y, grassSize);
+            while(1)
+            {
+                Sleep(snakeSpeed);
+                ClearSnake(head, end);
+                MoveSnake(head, end);
+                if (_kbhit())
+                    Key = _getch();
+                DirectionChange(Key);
+
+                if (EndGame(head, end)) 
+                {
+                    SaveRound();
+                    goto overGame; 
+                }
+                if(DoorReach(head, end))
+                {
+                    if(Round==3)
+                    {
+                        IMAGE WinImage;
+                        grassSize = 10;
+                        loadimage(&WinImage, _T("WinImage.png"));
+                        putimage(0, 0, WIDTH, HEIGHT, &WinImage, 0, 0);
+                        _getch();
+                        MainMenu();
+                    }
+                    else 
+                    {
+                        Round++;
+                        IMAGE NextRound;
+                        grassSize = 10;
+                        loadimage(&NextRound, _T("NextRound.jpg"));
+                        putimage(0, 0, WIDTH, HEIGHT, &NextRound, 0, 0);
+                        _getch();
+                        game();
+                    }
+                }
+                DrawSnake(head, end);
+            }
+        }
     }
-    
+    overGame:
     IMAGE GameOver;
     loadimage(&GameOver, _T("gameover.png"));
     putimage(0, 0, WIDTH, HEIGHT, &GameOver, 0, 0);
@@ -563,9 +633,22 @@ void CreateGrass3(link head, link end)
     {
         grass3X = rand() % 820 + 50;
         grass3Y = rand() % 640 + 50;
-    } while (GrassReach2(head, end));
+    } while (GrassReach3(head, end));
     setfillcolor(GREEN);
     solidcircle(grass3X, grass3Y, grassSize);
+}
+void CreateDoor(link head, link end)
+{
+    link p = head;
+    do
+    {
+        doorX = rand() % 820 + 50;
+        doorY = rand() % 640 + 50;
+    } while (DoorReach(head, end));
+    setfillcolor(BodyBlue);
+    solidcircle(doorX, doorY, DOORSIZE);
+    setfillcolor(BLUE);
+    solidcircle(doorX, doorY, DOORSIZE/2);
 }
 void SnakeDelete(link head,link end)
 {
@@ -636,6 +719,19 @@ int GrassReach3(link head, link end)
     }
     return 0;
 }
+int DoorReach(link head, link end)
+{
+    link p = head->next;
+    double distance;
+    while (p != end)
+    {
+        distance = fabs(p->x - doorX) * fabs(p->x - doorX) + fabs(p->y - doorY) * fabs(p->y - doorY);
+        distance = sqrt(distance);
+        if (distance < (double)RADIUS + 1 + DOORSIZE) { return 1; }
+        p = p->next;
+    }
+    return 0;
+}
 void CreateMine(link head, link end)
 {
     link p = head;
@@ -682,6 +778,7 @@ void Rank()
     for (int i = 0; i < 5; i++) { fin >> rankList[i]; }
     rankList[5] = score/5+'0';
     sort(rankList, rankList + 6, greater<char>());
+    fin.close();
     ofstream fout("rank.txt", ios::out);
     int x;
     for (int i = 0; i < 5; i++) { fout << rankList[i]; fout << ' '; }
@@ -695,5 +792,12 @@ void Rank()
         outtextxy(610, 200 + i * 50, *(rankList + i));
         outtextxy(630, 200 + i * 50, L"CM");
     }
+    fout.close();
+}
+void SaveRound()
+{
+    using namespace std;
+    ofstream fout("Round.txt", ios::out);
+    fout << Round; fout << ' ';
     fout.close();
 }
