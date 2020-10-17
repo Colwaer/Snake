@@ -385,7 +385,7 @@ void game()
         }
         if (SmartReach(head, end)) 
         {
-            
+            /*
             link p = head->next;
             int i = 3;
             while(i>0||score>18)
@@ -487,7 +487,7 @@ void game()
                 else { outtextxy(1115, 360, L"X"); }
                 outtextxy(1100, 360, *num);
             }
-            
+            */
             CreateSmart(head,end); 
         }
         if(FoodReach(head,end))
