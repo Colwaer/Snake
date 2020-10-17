@@ -385,7 +385,7 @@ void game()
         }
         if (SmartReach(head, end)) 
         {
-            /*
+            
             link p = head->next;
             int i = 3;
             while(i>0||score>18)
@@ -393,12 +393,34 @@ void game()
                 Sleep(snakeSpeed);
                 ClearSnake(head, end);
                 MoveSnake(head, end);
-                //CONTROL------------------------------------------
+                int x, y;
                 
-                if (p->x < foodX)Key = 'd';
-                else if (p->x > foodX)Key = 'a';
-                else if (p->y > foodY)Key = 'w';
-                else if (p->y < foodY)Key = 's';
+                //CONTROL------------------------------------------
+                if((p->y>foodY)&&direction=='s')
+                {
+                    if (p->x < foodX) direction = 'd';
+                    else direction = 'a';
+                }
+                else if((p->x > foodX) && direction == 'd')
+                {
+                    if (p->y > foodY) direction = 'w';
+                    else direction = 's';
+                }
+                else if ((p->x < foodX) && direction == 'a')
+                {
+                    if (p->y > foodY) direction = 'w';
+                    else direction = 's';
+                }
+                else if((p->y<foodY)&&direction=='w')
+                {
+                    if (p->x < foodX) direction = 'd';
+                    else direction = 'a';
+                }
+                int i = rand() % 4 + 1;
+                if (i == 1) { if (p->x > foodX)direction = 'a'; }
+                if (i == 2) { if (p->y < foodY)direction = 'w'; }
+                if (i == 3) { if (p->x < foodX)direction = 'd'; }
+                if (i == 4) { if (p->y > foodY)direction = 's'; }
                 //CONTROL------------------------------------------
                 DirectionChange(Key);
 
@@ -465,7 +487,7 @@ void game()
                 else { outtextxy(1115, 360, L"X"); }
                 outtextxy(1100, 360, *num);
             }
-            */
+            
             CreateSmart(head,end); 
         }
         if(FoodReach(head,end))
